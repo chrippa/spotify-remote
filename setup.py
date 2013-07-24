@@ -11,6 +11,7 @@ setup(name="spotify-remote",
       entry_points={
           "console_scripts": ["spotify-remote=spotify_remote:main"]
       },
+      py_modules=["spotify_remote"],
       install_requires=["docopt", "requests"],
 )
 
