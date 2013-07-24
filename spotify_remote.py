@@ -14,6 +14,7 @@ from docopt import docopt
 from string import ascii_lowercase
 from random import choice
 
+import os
 import requests
 import sys
 
@@ -44,6 +45,10 @@ ERROR_TYPES = {
     4303: "Content unavailable"
 }
 
+XDG_CACHE = os.environ.get("XDG_CACHE_DIR",
+                           os.path.expanduser("~/.cache"))
+OAUTH_CACHE = os.path.join(XDG_CACHE, "spotify-remote.oauth")
+
 
 class SpotifyRemoteError(Exception):
     pass
@@ -54,16 +59,16 @@ class SpotifyRemote(object):
         self.port = port_start
         self.port_end = port_end
         self.session = requests.session()
+        self.subdomain = "".join(choice(ascii_lowercase) for x in range(10))
         self.csrf_token = self.oauth_token = None
 
     def _url(self, path):
-        subdomain = "".join(choice(ascii_lowercase) for x in range(10))
-
-        return "https://{0}.spotilocal.com:{1}{2}".format(subdomain,
+        return "https://{0}.spotilocal.com:{1}{2}".format(self.subdomain,
                                                           self.port,
                                                           path)
 
-    def _call(self, path, headers=None, authed=False, **params):
+    def _call(self, path, headers=None, authed=False, raise_error=True,
+              **params):
         if authed:
             params["oauth"] = self.oauth_token
             params["csrf"] = self.csrf_token
@@ -85,20 +90,42 @@ class SpotifyRemote(object):
 
         error = res_json.get("error")
 
-        if error:
+        if raise_error and error:
             error_type = int(error.get("type", "0"))
             error_msg = ERROR_TYPES.get(error_type, "Unexpected error")
             raise SpotifyRemoteError(error_msg)
 
         return res_json
 
-    def handshake(self):
+    def get_oauth_token(self):
         res = self.session.get("http://open.spotify.com/token")
-        self.oauth_token = res.json().get("t")
+        oauth_token = res.json().get("t")
 
+        with open(OAUTH_CACHE, "w") as cache:
+            cache.write(oauth_token)
+
+        return oauth_token
+
+    def is_valid_oauth_token(self):
+        res = self._call("/remote/status.json", authed=True,
+                                                raise_error=False)
+
+        return not "error" in res
+
+    def handshake(self):
         headers = dict(Origin="https://open.spotify.com")
-        res = self._call("/simplecsrf/token.json", headers=headers)
+        res = self._call("/simplecsrf/token.json", headers=headers,
+                                                   authed=True)
         self.csrf_token = res.get("token")
+
+        if os.path.exists(OAUTH_CACHE):
+            with open(OAUTH_CACHE, "r") as cache:
+                self.oauth_token = cache.read()
+
+            if not self.is_valid_oauth_token():
+                self.oauth_token = self.get_oauth_token()
+        else:
+            self.oauth_token = self.get_oauth_token()
 
     def version(self):
         return self._call("/service/version.json", service="remote")
