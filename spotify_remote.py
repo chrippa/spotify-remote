@@ -45,7 +45,7 @@ ERROR_TYPES = {
     4303: "Content unavailable"
 }
 
-XDG_CACHE = os.environ.get("XDG_CACHE_DIR",
+XDG_CACHE = os.environ.get("XDG_CACHE_HOME",
                            os.path.expanduser("~/.cache"))
 OAUTH_CACHE = os.path.join(XDG_CACHE, "spotify-remote.oauth")
 
@@ -114,8 +114,7 @@ class SpotifyRemote(object):
 
     def handshake(self):
         headers = dict(Origin="https://open.spotify.com")
-        res = self._call("/simplecsrf/token.json", headers=headers,
-                                                   authed=True)
+        res = self._call("/simplecsrf/token.json", headers=headers)
         self.csrf_token = res.get("token")
 
         if os.path.exists(OAUTH_CACHE):
