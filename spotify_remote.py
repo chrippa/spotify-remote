@@ -10,13 +10,28 @@ Usage:
 
 from __future__ import print_function
 
+import os
+import requests
+import ssl
+import sys
+
 from docopt import docopt
 from string import ascii_lowercase
 from random import choice
 
-import os
-import requests
-import sys
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
+
+
+class ForcedSSLV3Adapter(HTTPAdapter):
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(num_pools=connections,
+                                       maxsize=maxsize,
+                                       block=block,
+                                       ssl_version=ssl.PROTOCOL_SSLv3)
+
+
+
 
 DEFAULT_RETURN_ON = ["login", "logout", "play", "pause", "error", "ap"]
 ERROR_TYPES = {
@@ -59,6 +74,7 @@ class SpotifyRemote(object):
         self.port = port_start
         self.port_end = port_end
         self.session = requests.session()
+        self.session.mount("https://", ForcedSSLV3Adapter())
         self.subdomain = "".join(choice(ascii_lowercase) for x in range(10))
         self.csrf_token = self.oauth_token = None
 
