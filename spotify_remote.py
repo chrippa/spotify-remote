@@ -100,6 +100,13 @@ class SpotifyRemote(object):
     def get_oauth_token(self):
         res = self.session.get("http://open.spotify.com/token")
         oauth_token = res.json().get("t")
+        cache_dir = os.path.dirname(OAUTH_CACHE)
+
+        if not os.path.exists(cache_dir):
+            try:
+                os.makedirs(cache_dir)
+            except OSError:
+                return oauth_token
 
         with open(OAUTH_CACHE, "w") as cache:
             cache.write(oauth_token)
