@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name="spotify-remote",
-      version="0.1.0",
+      version="0.1.1",
       description="A simple CLI to control the Spotify desktop client.",
       author="Christopher Rosell",
       author_email="chrippa@tanuki.se",
