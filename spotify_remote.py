@@ -16,8 +16,6 @@ import ssl
 import sys
 
 from docopt import docopt
-from string import ascii_lowercase
-from random import choice
 
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
@@ -33,6 +31,7 @@ class ForcedSSLV3Adapter(HTTPAdapter):
 
 
 
+URL_FORMAT = "https://localhost.spotilocal.com:{0}{1}"
 DEFAULT_RETURN_ON = ["login", "logout", "play", "pause", "error", "ap"]
 ERROR_TYPES = {
     4001: "Unknown method",
@@ -75,13 +74,10 @@ class SpotifyRemote(object):
         self.port_end = port_end
         self.session = requests.session()
         self.session.mount("https://", ForcedSSLV3Adapter())
-        self.subdomain = "".join(choice(ascii_lowercase) for x in range(10))
         self.csrf_token = self.oauth_token = None
 
     def _url(self, path):
-        return "https://{0}.spotilocal.com:{1}{2}".format(self.subdomain,
-                                                          self.port,
-                                                          path)
+        return URL_FORMAT.format(self.port, path)
 
     def _call(self, path, headers=None, authed=False, raise_error=True,
               **params):
