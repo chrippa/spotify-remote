@@ -1,8 +1,9 @@
 spotify-remote
 ==============
 
-[![PyPi Version](https://badge.fury.io/py/spotify-remote.png)](http://badge.fury.io/py/spotify-remote)
-[![Downloads](https://pypip.in/d/spotify-remote/badge.png)](https://crate.io/packages/spotify-remote?version=latest)
+
+[![PyPi Version](http://img.shields.io/pypi/v/spotify-remote.svg?style=flat-square)](https://pypi.python.org/pypi/spotify-remote)
+[![Downloads](http://img.shields.io/pypi/dm/spotify-remote.svg?style=flat-square)](https://pypi.python.org/pypi/spotify-remote)
 
 
 A simple CLI to control the Spotify desktop client
