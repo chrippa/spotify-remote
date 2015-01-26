@@ -12,23 +12,9 @@ from __future__ import print_function
 
 import os
 import requests
-import ssl
 import sys
 
 from docopt import docopt
-
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
-
-
-class ForcedSSLV3Adapter(HTTPAdapter):
-    def init_poolmanager(self, connections, maxsize, block=False):
-        self.poolmanager = PoolManager(num_pools=connections,
-                                       maxsize=maxsize,
-                                       block=block,
-                                       ssl_version=ssl.PROTOCOL_SSLv3)
-
-
 
 
 URL_FORMAT = "https://localhost.spotilocal.com:{0}{1}"
@@ -73,7 +59,6 @@ class SpotifyRemote(object):
         self.port = port_start
         self.port_end = port_end
         self.session = requests.session()
-        self.session.mount("https://", ForcedSSLV3Adapter())
         self.csrf_token = self.oauth_token = None
 
     def _url(self, path):
@@ -126,10 +111,10 @@ class SpotifyRemote(object):
         return oauth_token
 
     def is_valid_oauth_token(self):
-        res = self._call("/remote/status.json", authed=True,
-                                                raise_error=False)
+        res = self._call("/remote/status.json",
+                         authed=True, raise_error=False)
 
-        return not "error" in res
+        return "error" not in res
 
     def handshake(self):
         headers = dict(Origin="https://open.spotify.com")
@@ -149,9 +134,10 @@ class SpotifyRemote(object):
         return self._call("/service/version.json", service="remote")
 
     def status(self, return_after=-1, return_on=DEFAULT_RETURN_ON):
-        return self._call("/remote/status.json", authed=True,
-                                                 returnafter=return_after,
-                                                 returnon=",".join(return_on))
+        return self._call("/remote/status.json",
+                          authed=True,
+                          returnafter=return_after,
+                          returnon=",".join(return_on))
 
     def pause(self, pause=True):
         return self._call("/remote/pause.json", authed=True,
