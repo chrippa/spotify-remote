@@ -45,8 +45,17 @@ ERROR_TYPES = {
     4303: "Content unavailable"
 }
 
-XDG_CACHE = os.environ.get("XDG_CACHE_HOME",
-                           os.path.expanduser("~/.cache"))
+IS_WIN32 = os.name == "nt"
+
+if IS_WIN32:
+    XDG_CACHE = os.environ.get("APPDATA",
+                               os.path.expanduser("~"))
+
+else:
+    XDG_CACHE = os.environ.get("XDG_CACHE_HOME",
+                               os.path.expanduser("~/.cache"))
+
+
 OAUTH_CACHE = os.path.join(XDG_CACHE, "spotify-remote.oauth")
 
 
@@ -204,4 +213,3 @@ def main():
     except SpotifyRemoteError as err:
         print("Error: {0}".format(err))
         sys.exit(1)
-
