@@ -17,7 +17,7 @@ import sys
 from docopt import docopt
 
 
-URL_FORMAT = "https://localhost.spotilocal.com:{0}{1}"
+URL_FORMAT = "http://localhost.spotilocal.com:{0}{1}"
 DEFAULT_RETURN_ON = ["login", "logout", "play", "pause", "error", "ap"]
 ERROR_TYPES = {
     4001: "Unknown method",
@@ -55,7 +55,7 @@ class SpotifyRemoteError(Exception):
 
 
 class SpotifyRemote(object):
-    def __init__(self, port_start=4370, port_end=4379):
+    def __init__(self, port_start=4370, port_end=4400):
         self.port = port_start
         self.port_end = port_end
         self.session = requests.session()
